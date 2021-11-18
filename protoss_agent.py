@@ -81,6 +81,48 @@ class ProtossAgent(base_agent.BaseAgent):
                 y = random.randint(0, 83)
                 return actions.FUNCTIONS.Build_Pylon_screen("now", (x, y))
 
+        #Create gateway every oportunity (3 total)
+        Gateways = self.get_units_by_type(obs, units.Protoss.Gateway)
+        if len(Gateways) < 3 and minerals >= 150:
+            if self.unit_type_is_selected(obs, units.Protoss.Probe):
+                if self.can_do(obs, actions.FUNCTIONS.Build_Gateway_screen.id):
+                    x = random.randint(0,83)
+                    y = random.randint(0,83)
+                    return actions.FUNCTIONS.Build_Gateway_screen("now", (x,y))
+
+        #Attack - Zealots 
+        Zealots = self.get_units_by_type(obs, units.Protoss.Zealot)
+        if len(Zealots) >= 10:
+            if self.unit_type_is_selected(obs, units.Protoss.Zealot):
+                if self.can_do(obs, actions.FUNCTIONS.Attack_minimap.id):
+                    return actions.FUNCTIONS.Attack_minimap("now", self.attack_coordinates)
+            if self.can_do(obs, actions.FUNCTIONS.select_army.id):
+                return actions.Functions.select_army("select")
+        
+        #Create Zealots
+        if len(Gateways) >= 3:
+            if self.unit_type_is_selected(obs, units.Protoss.Gateway):
+                Zealots = self.get_units_by_type(obs, units.Protoss.Zealot)
+                if len(Zealots) <= 15:
+                    if self.can_do(obs, actions.FUNCTIONS.Train_Zealot_quick.id):
+                        return actions.FUNCTIONS.Train_Zealot_quick("now")
+            b = random.choice(Gateways)
+            return actions.FUNCTIONS.select_point("sellect_all_type", (b.x, b.y))
+
+        b_assimilator = self.build_assimilator(obs)
+        if b_assimilator:
+            return b_assimilator
+
+        # Recolectors
+        Recolectors = self.get_units_by_type(obs, units.Protoss.Probe)
+        if len(Recolectors) > 0:
+            probe = random.choice(Recolectors)
+            return actions.FUNCTIONS.select_point("select_all_type", (probe.x, probe.y))
+
+        g_assimilator = self.gather_vespene_gas(obs)
+        if g_assimilator:
+            return g_assimilator
+
         return actions.FUNCTIONS.no_op()
         
 def main(unused_argv):
